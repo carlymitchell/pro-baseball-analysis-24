@@ -61,40 +61,126 @@ tab1, tab2, tab3, tab4 = st.tabs(["MLB Batting", "MLB Pitching", "Minor League B
 # Tab 1: MLB Batting
 with tab1:
     st.subheader('2024 Major League Baseball Batting Stats')
-    st.write("Only players with > 100 plate appearances.")
-
-    if 'Team' in df_mlb_batters.columns:
+    
+    if not df_mlb_batters.empty:
+        # Filter by Team
         teams_batting = df_mlb_batters['Team'].unique()
-        selected_team_batting = st.selectbox("Select Team for Batting Stats", options=['All Teams'] + list(teams_batting), key="mlb_batting_team_select")
+        selected_team_batting = st.selectbox(
+            "Select Team for Batting Stats", 
+            options=['All Teams'] + list(teams_batting), 
+            key="mlb_batting_team_select"
+        )
 
-        filtered_df_batting = df_mlb_batters if selected_team_batting == 'All Teams' else df_mlb_batters[df_mlb_batters['Team'] == selected_team_batting]
+        # Apply Team Filter
+        filtered_df_batting = (
+            df_mlb_batters 
+            if selected_team_batting == 'All Teams' 
+            else df_mlb_batters[df_mlb_batters['Team'] == selected_team_batting]
+        )
+
+        # Filter by Minimum Plate Appearances (PA)
+        if 'PA' in filtered_df_batting.columns:
+            min_pa = st.slider(
+                "Select Minimum Plate Appearances (PA)", 
+                min_value=0, 
+                max_value=int(filtered_df_batting['PA'].max()), 
+                value=100, 
+                step=10, 
+                key="mlb_batting_min_pa_slider"
+            )
+            filtered_df_batting = filtered_df_batting[filtered_df_batting['PA'] >= min_pa]
+        else:
+            st.warning("The dataset does not contain a 'PA' column for filtering.")
+        
+        # Display Filtered Data
         st.dataframe(filtered_df_batting)
 
+        # Player and Stat Selection for Comparison
         players_batting = filtered_df_batting['Name'].unique()
-        selected_players_batting = st.multiselect("Select Players to Compare", options=players_batting, key="batting_players_select")
-        stats_to_plot_batting = st.multiselect("Select Stats to Compare", options=filtered_df_batting.select_dtypes(include='number').columns, key="batting_stats_select")
+        selected_players_batting = st.multiselect(
+            "Select Players to Compare", 
+            options=players_batting, 
+            key="mlb_batting_players_select"
+        )
+        stats_to_plot_batting = st.multiselect(
+            "Select Stats to Compare", 
+            options=filtered_df_batting.select_dtypes(include='number').columns, 
+            key="mlb_batting_stats_select"
+        )
 
+        # Generate Comparison Bar Graph
         if selected_players_batting and stats_to_plot_batting:
-            create_comparison_bar_graph(filtered_df_batting, selected_players_batting, stats_to_plot_batting, title="MLB Batting Comparison")
+            create_comparison_bar_graph(
+                filtered_df_batting, 
+                selected_players_batting, 
+                stats_to_plot_batting, 
+                title="MLB Batting Comparison"
+            )
+    else:
+        st.error("No data available for MLB batters.")
+
 
 # Tab 2: MLB Pitching
 with tab2:
     st.subheader('2024 Major League Baseball Pitching Stats')
-    st.write("Only players with > 50 innings pitched.")
-
-    if 'Team' in df_mlb_pitchers.columns:
+    
+    if not df_mlb_pitchers.empty:
+        # Filter by Team
         teams_pitching = df_mlb_pitchers['Team'].unique()
-        selected_team_pitching = st.selectbox("Select Team for Pitching Stats", options=['All Teams'] + list(teams_pitching), key="mlb_pitching_team_select")
+        selected_team_pitching = st.selectbox(
+            "Select Team for Pitching Stats", 
+            options=['All Teams'] + list(teams_pitching), 
+            key="mlb_pitching_team_select"
+        )
 
-        filtered_df_pitching = df_mlb_pitchers if selected_team_pitching == 'All Teams' else df_mlb_pitchers[df_mlb_pitchers['Team'] == selected_team_pitching]
+        # Apply Team Filter
+        filtered_df_pitching = (
+            df_mlb_pitchers 
+            if selected_team_pitching == 'All Teams' 
+            else df_mlb_pitchers[df_mlb_pitchers['Team'] == selected_team_pitching]
+        )
+
+        # Filter by Minimum Innings Pitched (IP)
+        if 'IP' in filtered_df_pitching.columns:
+            min_ip = st.slider(
+                "Select Minimum Innings Pitched (IP)", 
+                min_value=0, 
+                max_value=int(filtered_df_pitching['IP'].max()), 
+                value=10, 
+                step=1, 
+                key="mlb_pitching_min_ip_slider"
+            )
+            filtered_df_pitching = filtered_df_pitching[filtered_df_pitching['IP'] >= min_ip]
+        else:
+            st.warning("The dataset does not contain an 'IP' column for filtering.")
+        
+        # Display Filtered Data
         st.dataframe(filtered_df_pitching)
 
+        # Player and Stat Selection for Comparison
         players_pitching = filtered_df_pitching['Name'].unique()
-        selected_players_pitching = st.multiselect("Select Players to Compare", options=players_pitching, key="pitching_players_select")
-        stats_to_plot_pitching = st.multiselect("Select Stats to Compare", options=filtered_df_pitching.select_dtypes(include='number').columns, key="pitching_stats_select")
+        selected_players_pitching = st.multiselect(
+            "Select Players to Compare", 
+            options=players_pitching, 
+            key="mlb_pitching_players_select"
+        )
+        stats_to_plot_pitching = st.multiselect(
+            "Select Stats to Compare", 
+            options=filtered_df_pitching.select_dtypes(include='number').columns, 
+            key="mlb_pitching_stats_select"
+        )
 
+        # Generate Comparison Bar Graph
         if selected_players_pitching and stats_to_plot_pitching:
-            create_comparison_bar_graph(filtered_df_pitching, selected_players_pitching, stats_to_plot_pitching, title="MLB Pitching Comparison")
+            create_comparison_bar_graph(
+                filtered_df_pitching, 
+                selected_players_pitching, 
+                stats_to_plot_pitching, 
+                title="MLB Pitching Comparison"
+            )
+    else:
+        st.error("No data available for MLB pitchers.")
+
 
 # Tab 3: MiLB Data
 with tab3:
@@ -104,52 +190,37 @@ with tab3:
     st.write("### MiLB Pitchers")
     if 'Team' in df_milb_pitchers.columns:
         teams_pitchers_milb = df_milb_pitchers['Team'].unique()
-        selected_team_pitchers_milb = st.selectbox(
-            "Select Team for MiLB Pitchers", 
-            options=['All Teams'] + list(teams_pitchers_milb), 
-            key="milb_pitchers_team_select"
-        )
-
-        # Filter MiLB Pitchers by Team
+        selected_team_pitchers_milb = st.selectbox("Select Team for MiLB Pitchers", options=['All Teams'] + list(teams_pitchers_milb), key="milb_pitchers_team_select")
+        
         filtered_milb_pitchers = df_milb_pitchers if selected_team_pitchers_milb == 'All Teams' else df_milb_pitchers[df_milb_pitchers['Team'] == selected_team_pitchers_milb]
         st.dataframe(filtered_milb_pitchers)
 
         pitchers_milb = filtered_milb_pitchers['Name'].unique()
         selected_pitchers_milb = st.multiselect("Select MiLB Pitchers to Compare", options=pitchers_milb, key="milb_pitchers_select")
         stats_to_plot_pitchers_milb = st.multiselect("Select Stats to Compare", options=filtered_milb_pitchers.select_dtypes(include='number').columns, key="milb_pitching_stats_select")
-
+        
         if selected_pitchers_milb and stats_to_plot_pitchers_milb:
             create_comparison_bar_graph(filtered_milb_pitchers, selected_pitchers_milb, stats_to_plot_pitchers_milb, title="MiLB Pitching Comparison")
-    # Add a separator line
-    st.markdown("<hr style='border:1px solid #ccc;'>", unsafe_allow_html=True)
 
-
-    # MiLB Batters Section
     st.write("### MiLB Batters")
     if 'Team' in df_milb_batters.columns:
         teams_batters_milb = df_milb_batters['Team'].unique()
-        selected_team_batters_milb = st.selectbox(
-            "Select Team for MiLB Batters", 
-            options=['All Teams'] + list(teams_batters_milb), 
-            key="milb_batters_team_select"
-        )
-
-        # Filter MiLB Batters by Team
+        selected_team_batters_milb = st.selectbox("Select Team for MiLB Batters", options=['All Teams'] + list(teams_batters_milb), key="milb_batters_team_select")
+        
         filtered_milb_batters = df_milb_batters if selected_team_batters_milb == 'All Teams' else df_milb_batters[df_milb_batters['Team'] == selected_team_batters_milb]
         st.dataframe(filtered_milb_batters)
 
         batters_milb = filtered_milb_batters['Name'].unique()
         selected_batters_milb = st.multiselect("Select MiLB Batters to Compare", options=batters_milb, key="milb_batters_select")
         stats_to_plot_batters_milb = st.multiselect("Select Stats to Compare", options=filtered_milb_batters.select_dtypes(include='number').columns, key="milb_batting_stats_select")
-
+        
         if selected_batters_milb and stats_to_plot_batters_milb:
             create_comparison_bar_graph(filtered_milb_batters, selected_batters_milb, stats_to_plot_batters_milb, title="MiLB Batting Comparison")
-
 
 # Tab 4: Upcoming MLB Free Agents
 with tab4:
     st.subheader("Upcoming MLB Free Agents - 2024 Offseason")
-    st.write("Explore the list of players expected to hit free agency. Filter by team, age range, or compare key metrics.")
+    st.write("Explore the list of players expected to hit free agency. Filter by team or compare key metrics.")
 
     free_agent_type = st.radio("Select Player Type", options=["Hitters", "Pitchers"], key="fa_type_radio")
 
@@ -182,25 +253,6 @@ with tab4:
 
             if selected_players_pitchers and stats_to_plot_pitchers:
                 create_comparison_bar_graph(filtered_df_pitchers, selected_players_pitchers, stats_to_plot_pitchers, title="Free Agent Pitchers Comparison")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

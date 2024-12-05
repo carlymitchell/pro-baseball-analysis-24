@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Title for the Streamlit app
-st.markdown("<h1 style='font-size:32px;'>Major and Minor League Baseball Stats 2024</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='font-size:32px;'>Majorr and Minor League Baseball Stats 2024</h1>", unsafe_allow_html=True)
 
 # Load MLB Batters Data
 @st.cache_data
